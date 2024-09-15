@@ -13,6 +13,6 @@ async def lifespan(app: FastAPI):
     print("Database created")
 
 
-app = FastAPI(title="tracking_habits", lifespan=lifespan)
+app = FastAPI(title="traing_habits", lifespan=lifespan)
 
 app.include_router(router=router)
