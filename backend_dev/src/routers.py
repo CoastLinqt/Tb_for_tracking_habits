@@ -11,6 +11,8 @@ router = APIRouter(prefix="/api")
 
 
 @router.post("/sign_up")
-async def sign_up(user: UserSchema = Depends(), AsyncSession = Depends(get_async_session)):
+async def sign_up(user: UserSchema = Depends(),
+                  AsyncSession = Depends(get_async_session)
+                  ):
     pass
 
