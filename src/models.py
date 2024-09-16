@@ -1,6 +1,6 @@
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Table, func, ARRAY
 from sqlalchemy.orm import DeclarativeBase, relationship
-
+from sqlalchemy.types import LargeBinary
 from database import engine  # type: ignore
 
 
@@ -14,10 +14,10 @@ class Users(Model):
     name = Column(String(40), nullable=True)
     telegram_id = Column(Integer)
 
-    token = Column(String(), nullable=None)
+    token = Column(LargeBinary, nullable=None)
 
     def __repr__(self):
-        return f"id={self.id}," f" name={self.name}"
+        return f"id={self.id}," f" name={self.name}, t_id={self.token}"
 
 
 async def create_tables():

@@ -1,23 +1,34 @@
-
-
+from sqlalchemy.ext.asyncio import AsyncSession
+from database import get_async_session
+from models import Users
+from fastapi import Depends, HTTPException, UploadFile, status, Form
+from sqlalchemy import delete, desc, func, select
+from typing import List
+from utils import validate_password
 
 
 async def authenticate_user(
-    api_key: str = Header(None),
+    telegram_id: str = Form(),
+    password: str = Form(),
     session: AsyncSession = Depends(get_async_session),
 ):
 
-    user_auth = await session.execute(select(Users).where(Users.api_key == api_key))
+    find_user_db = await session.execute(
+        select(Users).where(Users.telegram_id == int(telegram_id))
+    )
 
-    if user_auth.scalar() is None:
-        new_user = Users(name=fake_name.name(), api_key=api_key)
-        session.add(new_user)
-        await session.commit()
+    unauth_exc = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid username or password"
+    )
 
-        user_new = await get_user_by_api_key(api_key=new_user.api_key, session=session)  # type: ignore
+    result = find_user_db.first()
+    if result is None:
+        return unauth_exc
 
-        return user_new
+    data_info: List[dict] = [i.__dict__ for i in result]
 
-    user = await get_user_by_api_key(api_key=api_key, session=session)
+    if not validate_password(password=password, hashed_password=data_info[0]["token"]):
+        return unauth_exc
 
-    return user
+    return data_info
+
