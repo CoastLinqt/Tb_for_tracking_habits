@@ -1,26 +1,13 @@
-import requests
-from telebot.async_telebot import AsyncTeleBot
-import asyncio
-import telebot
+from frontend_dev.loader import bot
+import handlers  # noqa
+from utils.set_bot_commands import set_default_commands
+from telebot.custom_filters import StateFilter
 
 
-# TOKEN = '6944166033:AAGtX4_5Ujtb5jFKVW9WhVwOY4EtUqb9VmY'
-# bot = telebot.TeleBot(token=TOKEN)
-#
-# webhook = '1638690fa06093.lhr.life'
-#
-# r = requests.get(
-#         f'https://api.telegram.org/bot{TOKEN}/setWebhook?url=https://{webhook}/')
-# print(r.json())
-#
-#
-# @bot.message_handler(commands=['start', 'help'])
-# def send_welcome(message):
-#     r = requests.get(
-#         f'https://api.telegram.org/bot{TOKEN}/setWebhook?url=https://{webhook}/')
-#
-#     bot.reply_to(message, 'hi')
-#
-#
-# bot.infinity_polling()
+if __name__ == "__main__":
+    bot.add_custom_filter(StateFilter(bot))
+    set_default_commands(bot)
+    bot.delete_webhook()
+    bot.infinity_polling()
+
 
