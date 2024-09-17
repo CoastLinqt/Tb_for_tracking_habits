@@ -1,13 +1,19 @@
-from fastapi import Depends, HTTPException, status, APIRouter, Form
-from sqlalchemy import delete, desc, func, select
+from fastapi import Depends, HTTPException,  APIRouter
+from fastapi.security import OAuth2PasswordBearer
+
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from database import get_async_session
 from models import Users
-
-from utils import encode_jwt
 from schemas import UserSchema, TokenInfo
-from utils import settings, hash_password
-from methods import authenticate_user
+from utils import hash_password, encode_jwt
+from methods import authenticate_user, get_current_active_auth_user
+
+
+oauth_scheme = OAuth2PasswordBearer(
+    tokenUrl="/login/",
+)
 
 
 router = APIRouter()
@@ -30,7 +36,7 @@ async def auth_register_user(
         await session.commit()
         return {"details": f"{user.password}"}
     else:
-        return {"details": "You've already been registered"}
+        return {"details": "user has already been registered"}
 
 
 @router.post(
@@ -41,10 +47,16 @@ async def auth_user_issue_jwt(user: UserSchema = Depends(authenticate_user)):
     if isinstance(user, HTTPException):
         return user.detail
 
-    jwt_payload = {"sub": user[0]["name"], "username": user[0]["name"]}
+    jwt_payload = {
+        "sub": user.name,
+        "username": user.name,
+        "telegram_id": user.telegram_id,
+    }
     token = encode_jwt(payload=jwt_payload)
 
     return TokenInfo(access_token=token, token_type="Bearer")
 
-# @router.get("/user/me/")
-# def
+
+@router.get("/user/me/")
+def auth_user_check_self_info(user: UserSchema = Depends(get_current_active_auth_user)):
+    return {"username": user.name, "telegram_id": user.telegram_id}
