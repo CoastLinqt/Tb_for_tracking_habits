@@ -1,6 +1,7 @@
 from typing import List, Optional
-#
 from pydantic import BaseModel, Field, constr, parse_obj_as, ConfigDict
+from datetime import datetime
+from fastapi import  Body
 
 
 class UserSchema(BaseModel):
@@ -10,6 +11,10 @@ class UserSchema(BaseModel):
     telegram_id: int
     password: str
     is_active: bool
+
+
+class TelegramId(BaseModel):
+    telegram_id: int
 
 
 class Chat(BaseModel):
@@ -44,5 +49,14 @@ class Answer(BaseModel):
 class TokenInfo(BaseModel):
     access_token: str
     token_type: str
+
+
+class AddHabits(BaseModel):
+    add_habit: str
+    habit_description: str
+    message_habit_goal: int
+    telegram_id: int
+    habit_date: str
+
 
 
