@@ -79,7 +79,6 @@ async def get_current_active_auth_user(
 
 
 async def add_habit(data: AddHabits, session: AsyncSession = Depends(get_async_session)):
-    formatter_string = "%d-%m-%Y"
 
     find_user_db = await session.execute(
         select(Users.id).where(Users.telegram_id == int(data.telegram_id))
@@ -89,17 +88,13 @@ async def add_habit(data: AddHabits, session: AsyncSession = Depends(get_async_s
     process_add_habit = Habits(
         name_habit=data.add_habit,
         description=data.habit_description,
+        habit_goal=data.message_habit_goal,
         user_id=result_user,
     )
     session.add(process_add_habit)
     await session.commit()
 
-    datetime_object = datetime.strptime(data.habit_date, formatter_string)
-    date_object = datetime_object.date()
-
     find_habit = HabitTracking(
-        count=data.message_habit_goal,
-        alert_time=date_object,
         habit_id=process_add_habit.id,
     )
     session.add(find_habit)

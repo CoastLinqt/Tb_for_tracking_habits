@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException,  APIRouter, Request, status
+from fastapi import Depends, HTTPException, APIRouter, Request, status
 from fastapi.security import OAuth2PasswordBearer
 
 from sqlalchemy import select
@@ -9,6 +9,8 @@ from models import Users
 from schemas import UserSchema, TokenInfo, TelegramId, AddHabits
 from utils import hash_password, encode_jwt
 from methods import authenticate_user, get_current_active_auth_user, add_habit
+from sqlalchemy.orm import selectinload
+
 # from main import app
 # from frontend_dev.config_info.config import WEBHOOK_URL, WEBHOOK_PATH
 # from frontend_dev.loader import bot
@@ -61,8 +63,10 @@ async def auth_user_issue_jwt(user: UserSchema = Depends(authenticate_user)):
     return TokenInfo(access_token=token, token_type="Bearer")
 
 
-@router.post('/check_user/')
-async def user_check_db(telegram_id: TelegramId, session: AsyncSession = Depends(get_async_session)):
+@router.post("/check_user/")
+async def user_check_db(
+    telegram_id: TelegramId, session: AsyncSession = Depends(get_async_session)
+):
 
     find_user_db = await session.execute(
         select(Users).where(Users.telegram_id == telegram_id.telegram_id)
@@ -70,15 +74,19 @@ async def user_check_db(telegram_id: TelegramId, session: AsyncSession = Depends
     result = find_user_db.scalar()
 
     if result is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,)
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+        )
 
-    raise HTTPException(status_code=status.HTTP_200_OK,)
+    raise HTTPException(
+        status_code=status.HTTP_200_OK,
+    )
 
 
 @router.get("/user/me/")
 async def auth_user_check_self_info(
-                              user: UserSchema = Depends(get_current_active_auth_user),
-                             ):
+    user: UserSchema = Depends(get_current_active_auth_user),
+):
 
     return {"username": user.name, "telegram_id": user.telegram_id}
 
@@ -87,5 +95,48 @@ async def auth_user_check_self_info(
 async def add_habit(habit: AddHabits = Depends(add_habit)):
 
     if habit:
-        raise HTTPException(status_code=status.HTTP_200_OK,)
-    raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, )
+        raise HTTPException(
+            status_code=status.HTTP_200_OK,
+        )
+    raise HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    )
+
+
+@router.post("/user/me/habits/")
+async def process_habits(
+    telegram_id: TelegramId, session: AsyncSession = Depends(get_async_session)
+):
+
+    find = await session.execute(
+        select(Users)
+        .where(Users.telegram_id == telegram_id.telegram_id)
+        .options(selectinload(Users.habits))
+    )
+    result_db = find.scalars()
+    if result_db:
+
+        for i in result_db:
+            result = [
+                {
+                    "name_habit": f"{e.name_habit}",
+                    "description": f"{e.description}",
+                    "habit_goal": f"{e.habit_goal}",
+                }
+                for e in i.habits
+            ]
+            return result
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, )
+
+
+@router.get("/test")
+async def dsa(session: AsyncSession = Depends(get_async_session)):
+    pass
+    # data = {'telegram_id': 123}
+    # find = await session.execute(select(Users).where(Users.telegram_id == data['telegram_id']).options(selectinload(Users.habits))
+    # )
+    # re = find.scalars()
+    # for i in re:
+    #     result = [{"name_habit": f"{e.name_habit}", "description": f"{e.description}", "habit_goal": f'{e.habit_goal}'} for e in i.habits]
+    #     return result

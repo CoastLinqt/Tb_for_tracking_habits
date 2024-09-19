@@ -6,6 +6,7 @@ from frontend_dev.loader import bot
 def bot_help(m: Message):
 
     text = "/help — помощь по командам бота.\n" \
+           "/start — регистрация пользователя.\n" \
            "/add_habit — информация о новой привычке.\n" \
            "/habits — получение списка привычек.\n" \
            "/edit_habit — выбрать привычку для редактирования.\n" \
