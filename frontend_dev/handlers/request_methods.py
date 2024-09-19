@@ -16,6 +16,9 @@ def check_user_db(telegram_id):
 
 
 def add_habit_db(data: dict):
+    print(data)
 
     requests.post(url=f'{BACK_URL}/user/me/add_habit/', data=json.dumps(data))
+
+
 

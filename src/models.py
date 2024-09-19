@@ -18,6 +18,8 @@ class Users(Model):
 
     token = Column(LargeBinary, nullable=False)
 
+    habits = relationship("Habits", backref='users', cascade="all, delete", lazy='selectin')
+
     def __repr__(self):
         return f"id={self.id}," f" name={self.name}, t_id={self.telegram_id}, is_active={self.is_active}"
 
@@ -27,8 +29,9 @@ class Habits(Model):
 
     id = Column(Integer, primary_key=True)
 
-    name_habit = Column(String(30),)
+    name_habit = Column(String(20),)
     description = Column(String(50),)
+    habit_goal = Column(String(20),)
 
     user_id = Column(Integer, ForeignKey("users.id",ondelete="CASCADE"), unique=False)
 
@@ -41,8 +44,8 @@ class HabitTracking(Model):
 
     id = Column(Integer, primary_key=True)
 
-    alert_time = Column(DateTime, server_default=func.now())
-    count = Column(Integer,)
+    alert_time = Column(DateTime, nullable=True)
+    count = Column(Integer, default=0)
 
     habit_id = Column(Integer, ForeignKey("habits.id", ondelete="CASCADE"), unique=False)
 

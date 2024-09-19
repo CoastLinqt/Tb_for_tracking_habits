@@ -54,9 +54,9 @@ class TokenInfo(BaseModel):
 class AddHabits(BaseModel):
     add_habit: str
     habit_description: str
-    message_habit_goal: int
+    message_habit_goal: str
     telegram_id: int
-    habit_date: str
+
 
 
 
