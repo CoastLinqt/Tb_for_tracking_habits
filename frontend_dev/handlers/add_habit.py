@@ -40,7 +40,7 @@ def add_habit(message: Message):
 
     if len(message_habit) < 20:
         with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
-            data["add_habit"] = message_habit
+            data["add_habit"] = message_habit.capitalize()
 
         bot.send_message(message.chat.id, "Введите описание новой привычки:")
         bot.set_state(message.from_user.id, States.habit_description, message.chat.id)
@@ -73,11 +73,16 @@ def process_habit_goal(message: Message):
         with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
             data["message_habit_goal"] = message_habit_goal
 
-        add_habit_db(data=data)
+        if add_habit_db(data=data):
 
-        bot.send_message(
-            message.chat.id, "Новая привычка успешно добавлена!Проверьте /habits"
-        )
+            bot.send_message(
+                message.chat.id, "Новая привычка успешно добавлена!Проверьте /habits"
+            )
+        else:
+            bot.send_message(
+                message.chat.id, "Такая привычка уже есть !Проверьте /habits"
+            )
+
     else:
         bot.reply_to(message, f"Количество символов и букв в сумме не должно превышать 20."
                               f" У вас {len(message_habit_goal)}")

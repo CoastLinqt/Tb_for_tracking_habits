@@ -9,7 +9,7 @@ def create_table(data: List[dict]):
     table.align["Discr"] = "r"
     table.align["Goal"] = "r"
 
-    table._max_width = {"name": 9, "description": 9, "goal": 5}
+    table._max_width = {"name": 9, "description": 9, "goal": 6}
 
     for num, result in enumerate(data):
         table.add_row(

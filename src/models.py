@@ -29,7 +29,7 @@ class Habits(Model):
 
     id = Column(Integer, primary_key=True)
 
-    name_habit = Column(String(20),)
+    name_habit = Column(String(20), unique=True)
     description = Column(String(50),)
     habit_goal = Column(String(20),)
 

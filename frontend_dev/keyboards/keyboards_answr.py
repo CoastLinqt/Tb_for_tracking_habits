@@ -3,10 +3,9 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 def pick_edit(data):
     buttons = InlineKeyboardMarkup()
-
     for i in data:
-        for k, v in i.items():
-            buttons.add((InlineKeyboardButton(text=v, callback_data="+" + v)))
+
+        buttons.add((InlineKeyboardButton(text=i['name_habit'].capitalize(), callback_data="+" + i['name_habit'].capitalize())))
     return buttons
 
 
