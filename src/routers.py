@@ -1,15 +1,17 @@
 from fastapi import Depends, HTTPException, APIRouter, Request, status
 from fastapi.security import OAuth2PasswordBearer
 
-from sqlalchemy import select
+from sqlalchemy import select, and_, delete, insert, update
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import selectinload
 
 from database import get_async_session
-from models import Users
-from schemas import UserSchema, TokenInfo, TelegramId, AddHabits
+from models import Users, Habits, HabitTracking
+from schemas import UserSchema, TokenInfo, TelegramId, AddHabits, EditHabit
 from utils import hash_password, encode_jwt
 from methods import authenticate_user, get_current_active_auth_user, add_habit
-from sqlalchemy.orm import selectinload
+
 
 # from main import app
 # from frontend_dev.config_info.config import WEBHOOK_URL, WEBHOOK_PATH
@@ -93,14 +95,16 @@ async def auth_user_check_self_info(
 
 @router.post("/user/me/add_habit/")
 async def add_habit(habit: AddHabits = Depends(add_habit)):
+    print(habit, 'das')
 
-    if habit:
+    if habit is True:
         raise HTTPException(
             status_code=status.HTTP_200_OK,
         )
     raise HTTPException(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
     )
+
 
 
 @router.post("/user/me/habits/")
@@ -127,7 +131,86 @@ async def process_habits(
             ]
             return result
     else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+        )
+
+
+@router.delete("/habit/delete/")
+async def delete_habit(
+    data_habit: EditHabit, session: AsyncSession = Depends(get_async_session)
+):
+    find_id_user = (
+        select(Users.id).filter(Users.telegram_id == data_habit.telegram_id).subquery()
+    )
+
+    await session.execute(
+        delete(Habits).where(
+            and_(
+                Habits.name_habit == data_habit.name_habit,
+                Habits.user_id == find_id_user.c.id,
+            )
+        )
+    )
+    await session.commit()
+
+    raise HTTPException(
+        status_code=status.HTTP_200_OK,
+    )
+
+
+@router.patch("/habit/edit/")
+async def edit_habit(
+    data_habit: EditHabit, session: AsyncSession = Depends(get_async_session)
+):
+    find_id_user = (
+        select(Users.id).filter(Users.telegram_id == data_habit.telegram_id).subquery()
+    )
+
+    if data_habit.habit_goal and data_habit.description:
+        await session.execute(
+            update(Habits)
+            .values(
+                description=data_habit.description, habit_goal=data_habit.habit_goal
+            )
+            .filter(
+                and_(
+                    Habits.name_habit == data_habit.name_habit,
+                    Habits.user_id == find_id_user.c.id,
+                )
+            )
+        )
+    else:
+        if data_habit.habit_goal:
+
+            await session.execute(
+                update(Habits)
+                .values(habit_goal=data_habit.habit_goal)
+                .filter(
+                    and_(
+                        Habits.name_habit == data_habit.name_habit,
+                        Habits.user_id == find_id_user.c.id,
+                    )
+                )
+            )
+
+        elif data_habit.description:
+
+            await session.execute(
+                update(Habits)
+                .values(description=data_habit.description)
+                .filter(
+                    and_(
+                        Habits.name_habit == data_habit.name_habit,
+                        Habits.user_id == find_id_user.c.id,
+                    )
+                )
+            )
+
+    await session.commit()
+    raise HTTPException(
+        status_code=status.HTTP_200_OK,
+    )
 
 
 @router.get("/test")

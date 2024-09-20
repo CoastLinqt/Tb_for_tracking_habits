@@ -11,6 +11,7 @@ class States(StatesGroup):
     save_habit_name = State()
     set_goal = State()
     set_description = State()
+    set_delete_habit = State()
     set_all_goal = State()
     set_all_description = State()
 
