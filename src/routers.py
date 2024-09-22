@@ -8,9 +8,9 @@ from sqlalchemy.orm import selectinload
 
 from database import get_async_session
 from models import Users, Habits, HabitTracking
-from schemas import UserSchema, TokenInfo, TelegramId, AddHabits, EditHabit
+from schemas import UserSchema, TokenInfo, TelegramId, AddHabits, EditTrackHabit
 from utils import hash_password, encode_jwt
-from methods import authenticate_user, get_current_active_auth_user, add_habit
+from methods import authenticate_user, get_current_active_auth_user, add_habit, function_update_track_habit
 
 
 # from main import app
@@ -106,7 +106,6 @@ async def add_habit(habit: AddHabits = Depends(add_habit)):
     )
 
 
-
 @router.post("/user/me/habits/")
 async def process_habits(
     telegram_id: TelegramId, session: AsyncSession = Depends(get_async_session)
@@ -126,6 +125,7 @@ async def process_habits(
                     "name_habit": f"{e.name_habit}",
                     "description": f"{e.description}",
                     "habit_goal": f"{e.habit_goal}",
+                    "result": f"{e.result}"
                 }
                 for e in i.habits
             ]
@@ -138,7 +138,7 @@ async def process_habits(
 
 @router.delete("/habit/delete/")
 async def delete_habit(
-    data_habit: EditHabit, session: AsyncSession = Depends(get_async_session)
+    data_habit: EditTrackHabit, session: AsyncSession = Depends(get_async_session)
 ):
     find_id_user = (
         select(Users.id).filter(Users.telegram_id == data_habit.telegram_id).subquery()
@@ -161,7 +161,7 @@ async def delete_habit(
 
 @router.patch("/habit/edit/")
 async def edit_habit(
-    data_habit: EditHabit, session: AsyncSession = Depends(get_async_session)
+    data_habit: EditTrackHabit, session: AsyncSession = Depends(get_async_session)
 ):
     find_id_user = (
         select(Users.id).filter(Users.telegram_id == data_habit.telegram_id).subquery()
@@ -213,13 +213,49 @@ async def edit_habit(
     )
 
 
-@router.get("/test")
-async def dsa(session: AsyncSession = Depends(get_async_session)):
-    pass
-    # data = {'telegram_id': 123}
-    # find = await session.execute(select(Users).where(Users.telegram_id == data['telegram_id']).options(selectinload(Users.habits))
-    # )
-    # re = find.scalars()
-    # for i in re:
-    #     result = [{"name_habit": f"{e.name_habit}", "description": f"{e.description}", "habit_goal": f'{e.habit_goal}'} for e in i.habits]
-    #     return result
+@router.post("/habit/edit/track/")
+async def track_habit(tracking_habit: EditTrackHabit = Depends(function_update_track_habit)):
+    if tracking_habit:
+        raise HTTPException(status_code=status.HTTP_200_OK,)
+
+    raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@router.post("/habit/track_all/")
+async def track_all(telegram_id: TelegramId, session: AsyncSession = Depends(get_async_session) ):
+    find = await session.execute(
+        select(Users).where(Users.telegram_id == telegram_id.telegram_id).options(selectinload(Users.habits))
+        )
+    find_scalar = find.scalars()
+    for items in find_scalar:
+        result = [habit_info.id for habit_info in items.habits]
+
+        find_in = await session.execute(select(HabitTracking).where(HabitTracking.habit_id.in_(result)))
+        find_in_scalar = find_in.scalars()
+        result = [{
+            "name_habit": f"{i.habits.name_habit}",
+
+        } for i in find_in_scalar]
+
+        return result
+
+# @router.get("/test")
+# async def dsa(session: AsyncSession = Depends(get_async_session)):
+#
+#     data = {'telegram_id': 138217207}
+#     find = await session.execute(
+#         select(Users).where(Users.telegram_id == data['telegram_id']).options(selectinload(Users.habits))
+#     )
+#     find_scalar = find.scalars()
+#     for items in find_scalar:
+#         result = [habit_info.id for habit_info in items.habits]
+#
+#         find_in = await session.execute(select(HabitTracking).where(HabitTracking.habit_id.in_(result)))
+#         find_in_scalar = find_in.scalars()
+#         result = [{
+#             "name_habit": f"{i.habits.name_habit}",
+#
+#         } for i in find_in_scalar]
+#         print(result)
+#
+#         return result

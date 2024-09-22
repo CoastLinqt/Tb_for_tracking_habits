@@ -35,6 +35,5 @@ def edit_habit_request(data: dict):
     requests.patch(f"{BACK_URL}/habit/edit/", data=json.dumps(data))
 
 
-
 def delete_habit_request(data: dict):
     requests.delete(url=f"{BACK_URL}/habit/delete/", data=json.dumps(data))

@@ -8,6 +8,12 @@ def pick_edit(data):
         buttons.add((InlineKeyboardButton(text=i['name_habit'].capitalize(), callback_data="+" + i['name_habit'].capitalize())))
     return buttons
 
+def pick_track(data):
+    buttons = InlineKeyboardMarkup()
+    for i in data:
+        buttons.add((InlineKeyboardButton(text=i['name_habit'].capitalize(), callback_data="*" + i['name_habit'].capitalize())))
+    return buttons
+
 
 def delete_or_edit_habit():
     buttons = InlineKeyboardMarkup()
