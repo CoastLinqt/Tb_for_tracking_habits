@@ -58,7 +58,7 @@ class AddHabits(BaseModel):
     telegram_id: int
 
 
-class EditHabit(BaseModel):
+class EditTrackHabit(BaseModel):
     telegram_id: int
     name_habit: str
     habit_goal: str | None = None

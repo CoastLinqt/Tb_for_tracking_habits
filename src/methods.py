@@ -7,7 +7,7 @@ from fastapi.security import HTTPAuthorizationCredentials, OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import delete, desc, func, select
+from sqlalchemy import delete, desc, func, select, and_, update
 from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import IntegrityError
 
@@ -16,8 +16,7 @@ from asyncpg.exceptions import UniqueViolationError
 from database import get_async_session
 from models import Users, Habits, HabitTracking
 from utils import validate_password, decode_jwt
-from schemas import UserSchema, TokenInfo, AddHabits
-
+from schemas import UserSchema, TokenInfo, AddHabits, EditTrackHabit
 
 
 oauth_scheme = OAuth2PasswordBearer(
@@ -119,5 +118,33 @@ async def add_habit(data: AddHabits, session: AsyncSession = Depends(get_async_s
     except IntegrityError as e:
         await session.rollback()
         print("habit's already been added.")
+
+
+async def function_update_track_habit(data: EditTrackHabit, session: AsyncSession = Depends(get_async_session)):
+    select_find_id_user = (select(Users.id).filter(Users.telegram_id == data.telegram_id).subquery())
+
+    select_find_habit = (select(Habits.id).filter(
+        and_(
+            Habits.name_habit == data.name_habit,
+            Habits.user_id == select_find_id_user.c.id,
+        )
+    ).subquery())
+    try:
+
+        await session.execute(update(HabitTracking).values(count=HabitTracking.count+1).filter(HabitTracking.habit_id == select_find_habit.c.id))
+        await session.commit()
+
+        return True
+
+    except IntegrityError as e:
+        await session.rollback()
+        await session.execute(delete(HabitTracking).filter(HabitTracking.habit_id == select_find_habit.c.id))
+
+        await session.execute(update(Habits).values(result='V').filter(
+            and_(Habits.name_habit == data.name_habit, Habits.user_id == select_find_id_user.c.id)))
+
+        await session.commit()
+
+        print("limit count (max=21)")
 
 

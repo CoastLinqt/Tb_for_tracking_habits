@@ -13,7 +13,8 @@
 # date_object = datetime_object.date()
 # print(date_object)
 
-dict_new =[{"name_habit": "Smoke", "description": "dasda", "habit_goal": "dsa"},
-           {"name_habit": "Smoke", "description": "dasda", "habit_goal": "dsa"}]
-for i in dict_new:
-    print(i['name_habit'])
+# dict_new =[{"name_habit": "Smoke", "description": "dasda", "habit_goal": "dsa"},
+#            {"name_habit": "Smoke", "description": "dasda", "habit_goal": "dsa"}]
+# for i in dict_new:
+#     print(i['name_habit'])
+print(len('dasdasfafadfagadgads'))
