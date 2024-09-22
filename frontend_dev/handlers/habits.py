@@ -7,7 +7,7 @@ from .request_methods import check_user_db
 from frontend_dev.config_info.config import BACK_URL
 from .help_func import create_table
 
-
+new = ''
 @bot.message_handler(commands=["habits"])
 def send_table(message: Message):
     result = check_user_db(telegram_id=message.from_user.id)
