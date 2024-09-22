@@ -1,14 +1,22 @@
+from typing import List
+from datetime import datetime
+
+from fastapi import Depends, HTTPException, UploadFile, status, Form
+from fastapi.security import HTTPAuthorizationCredentials, OAuth2PasswordBearer
+
+from jwt.exceptions import InvalidTokenError
+
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import delete, desc, func, select, and_, update
+from sqlalchemy.orm import selectinload
+from sqlalchemy.exc import IntegrityError
+
+from asyncpg.exceptions import UniqueViolationError
+
 from database import get_async_session
 from models import Users, Habits, HabitTracking
-from fastapi import Depends, HTTPException, UploadFile, status, Form
-from sqlalchemy import delete, desc, func, select
-from typing import List
 from utils import validate_password, decode_jwt
-from fastapi.security import HTTPAuthorizationCredentials, OAuth2PasswordBearer
-from jwt.exceptions import InvalidTokenError
-from schemas import UserSchema, TokenInfo, AddHabits
-from datetime import datetime
+from schemas import UserSchema, TokenInfo, AddHabits, EditTrackHabit
 
 
 oauth_scheme = OAuth2PasswordBearer(
@@ -84,20 +92,59 @@ async def add_habit(data: AddHabits, session: AsyncSession = Depends(get_async_s
         select(Users.id).where(Users.telegram_id == int(data.telegram_id))
     )
     result_user = find_user_db.scalar()
+    # check_in_db_habit = select(Users.id).where(Users.telegram_id == int(data.telegram_id)).options(selectinload(Users.habits))
+    #
+    # find_habit_name_db = await session.execute(select(Habits).where((Habits.name_habit.lower())_in))
 
-    process_add_habit = Habits(
-        name_habit=data.add_habit,
-        description=data.habit_description,
-        habit_goal=data.message_habit_goal,
-        user_id=result_user,
-    )
-    session.add(process_add_habit)
-    await session.commit()
+    try:
 
-    find_habit = HabitTracking(
-        habit_id=process_add_habit.id,
-    )
-    session.add(find_habit)
-    await session.commit()
+        process_add_habit = Habits(
+            name_habit=data.add_habit.capitalize(),
+            description=data.habit_description,
+            habit_goal=data.message_habit_goal,
+            user_id=result_user,
+        )
+        session.add(process_add_habit)
+        await session.commit()
 
-    return True
+        find_habit = HabitTracking(
+            habit_id=process_add_habit.id,
+        )
+        session.add(find_habit)
+        await session.commit()
+
+        return True
+
+    except IntegrityError as e:
+        await session.rollback()
+        print("habit's already been added.")
+
+
+async def function_update_track_habit(data: EditTrackHabit, session: AsyncSession = Depends(get_async_session)):
+    select_find_id_user = (select(Users.id).filter(Users.telegram_id == data.telegram_id).subquery())
+
+    select_find_habit = (select(Habits.id).filter(
+        and_(
+            Habits.name_habit == data.name_habit,
+            Habits.user_id == select_find_id_user.c.id,
+        )
+    ).subquery())
+    try:
+
+        await session.execute(update(HabitTracking).values(count=HabitTracking.count+1).filter(HabitTracking.habit_id == select_find_habit.c.id))
+        await session.commit()
+
+        return True
+
+    except IntegrityError as e:
+        await session.rollback()
+        await session.execute(delete(HabitTracking).filter(HabitTracking.habit_id == select_find_habit.c.id))
+
+        await session.execute(update(Habits).values(result='V').filter(
+            and_(Habits.name_habit == data.name_habit, Habits.user_id == select_find_id_user.c.id)))
+
+        await session.commit()
+
+        print("limit count (max=21)")
+
+

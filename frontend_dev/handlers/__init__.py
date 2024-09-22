@@ -1,6 +1,10 @@
-from . import edit_habits
-from . import habits
-from . import add_habit
+from .auth import start
 from . import help
-from . import start
+from . import habits, track_habit, edit_habits
+
+from . import add_habit
+
+
+
+
 
