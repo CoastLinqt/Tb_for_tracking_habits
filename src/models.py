@@ -1,7 +1,7 @@
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, func, Boolean
-from sqlalchemy.orm import DeclarativeBase, relationship, validates
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Boolean
+from sqlalchemy.orm import DeclarativeBase, relationship
 from sqlalchemy.types import LargeBinary
-from database import engine  # type: ignore
+from database.database import engine  # type: ignore
 
 
 class Model(DeclarativeBase):

@@ -1,4 +1,6 @@
 import asyncio
+import models
+
 from logging.config import fileConfig
 
 from sqlalchemy import pool
@@ -20,9 +22,8 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from src.models import Model
 
-target_metadata = Model.metadata
+target_metadata = models.Model.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

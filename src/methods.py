@@ -1,22 +1,16 @@
-from typing import List
-from datetime import datetime
-
-from fastapi import Depends, HTTPException, UploadFile, status, Form
-from fastapi.security import HTTPAuthorizationCredentials, OAuth2PasswordBearer
+from fastapi import Depends, HTTPException, status, Form
+from fastapi.security import OAuth2PasswordBearer
 
 from jwt.exceptions import InvalidTokenError
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import delete, desc, func, select, and_, update
-from sqlalchemy.orm import selectinload
+from sqlalchemy import select, and_, update
 from sqlalchemy.exc import IntegrityError
 
-from asyncpg.exceptions import UniqueViolationError
-
-from database import get_async_session
+from database.database import get_async_session
 from models import Users, Habits, HabitTracking
 from utils import validate_password, decode_jwt
-from schemas import UserSchema, TokenInfo, AddHabits, EditTrackHabit
+from schemas import UserSchema, AddHabits, EditTrackHabit
 
 
 oauth_scheme = OAuth2PasswordBearer(

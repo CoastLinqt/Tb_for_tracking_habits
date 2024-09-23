@@ -1,11 +1,11 @@
-from fastapi import Depends, HTTPException, APIRouter, Request, status
+from fastapi import Depends, HTTPException, APIRouter, status
 from fastapi.security import OAuth2PasswordBearer
 
-from sqlalchemy import select, and_, delete, insert, update, join
+from sqlalchemy import select, and_, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from database import get_async_session
+from database.database import get_async_session
 from models import Users, Habits, HabitTracking
 from schemas import UserSchema, TokenInfo, TelegramId, AddHabits, EditTrackHabit
 from utils import hash_password, encode_jwt
