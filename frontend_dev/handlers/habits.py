@@ -28,7 +28,9 @@ def send_table(message: Message):
             data=json.dumps({"telegram_id": message.from_user.id}),
         )
         info_habits = result_db.json()
-        if info_habits:
+
+        if result_db.status_code == 200:
+
             table = create_table(data=info_habits)
 
             bot.send_message(

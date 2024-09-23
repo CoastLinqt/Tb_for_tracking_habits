@@ -14,6 +14,12 @@ from methods import (
     get_current_active_auth_user,
     add_habit,
     function_update_track_habit,
+    function_edit_habit,
+    function_track_all,
+    function_delete_habit,
+    function_process_habits,
+    function_habit_stats,
+    function_user_check_db,
 )
 
 
@@ -63,14 +69,10 @@ async def auth_user_issue_jwt(user: UserSchema = Depends(authenticate_user)):
 
 @router.post("/check_user/")
 async def user_check_db(
-    telegram_id: TelegramId, session: AsyncSession = Depends(get_async_session)
+    telegram_id: TelegramId = Depends(function_user_check_db)
 ):
-    find_user_db = await session.execute(
-        select(Users).where(Users.telegram_id == telegram_id.telegram_id)
-    )
-    result = find_user_db.scalar()
 
-    if result is None:
+    if telegram_id is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
         )
@@ -89,7 +91,6 @@ async def auth_user_check_self_info(
 
 @router.post("/user/me/add_habit/")
 async def add_habit(habit: AddHabits = Depends(add_habit)):
-    print(habit, "das")
 
     if habit is True:
         raise HTTPException(
@@ -101,105 +102,35 @@ async def add_habit(habit: AddHabits = Depends(add_habit)):
 
 
 @router.post("/user/me/habits/")
-async def process_habits(
-    telegram_id: TelegramId, session: AsyncSession = Depends(get_async_session)
-):
-    find = await session.execute(
-        select(Users)
-        .where(Users.telegram_id == telegram_id.telegram_id)
-        .options(selectinload(Users.habits))
+async def process_habits(telegram_id: TelegramId = Depends(function_process_habits)):
+    result = telegram_id
+
+    if result:
+        return result
+
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
     )
-    result_db = find.scalars()
-    if result_db:
-        for i in result_db:
-            result = [
-                {
-                    "name_habit": f"{e.name_habit}",
-                    "description": f"{e.description}",
-                    "habit_goal": f"{e.habit_goal}",
-                }
-                for e in i.habits
-            ]
-            return result
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-        )
 
 
 @router.delete("/habit/delete/")
-async def delete_habit(
-    data_habit: EditTrackHabit, session: AsyncSession = Depends(get_async_session)
-):
-    find_id_user = (
-        select(Users.id).filter(Users.telegram_id == data_habit.telegram_id).subquery()
-    )
-
-    await session.execute(
-        delete(Habits).where(
-            and_(
-                Habits.name_habit == data_habit.name_habit,
-                Habits.user_id == find_id_user.c.id,
-            )
+async def delete_habit(data_habit: EditTrackHabit = Depends(function_delete_habit)):
+    if data_habit:
+        raise HTTPException(
+            status_code=status.HTTP_200_OK,
         )
-    )
-    await session.commit()
-
     raise HTTPException(
-        status_code=status.HTTP_200_OK,
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
     )
 
 
 @router.patch("/habit/edit/")
-async def edit_habit(
-    data_habit: EditTrackHabit, session: AsyncSession = Depends(get_async_session)
-):
-    find_id_user = (
-        select(Users.id).filter(Users.telegram_id == data_habit.telegram_id).subquery()
-    )
-
-    if data_habit.habit_goal and data_habit.description:
-        await session.execute(
-            update(Habits)
-            .values(
-                description=data_habit.description, habit_goal=data_habit.habit_goal
-            )
-            .filter(
-                and_(
-                    Habits.name_habit == data_habit.name_habit,
-                    Habits.user_id == find_id_user.c.id,
-                )
-            )
+async def edit_habit(data_habit: EditTrackHabit = Depends(function_edit_habit)):
+    if data_habit:
+        raise HTTPException(
+            status_code=status.HTTP_200_OK,
         )
-    else:
-        if data_habit.habit_goal:
-            await session.execute(
-                update(Habits)
-                .values(habit_goal=data_habit.habit_goal)
-                .filter(
-                    and_(
-                        Habits.name_habit == data_habit.name_habit,
-                        Habits.user_id == find_id_user.c.id,
-                    )
-                )
-            )
-
-        elif data_habit.description:
-            await session.execute(
-                update(Habits)
-                .values(description=data_habit.description)
-                .filter(
-                    and_(
-                        Habits.name_habit == data_habit.name_habit,
-                        Habits.user_id == find_id_user.c.id,
-                    )
-                )
-            )
-
-    await session.commit()
-    raise HTTPException(
-        status_code=status.HTTP_200_OK,
-    )
+    raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,)
 
 
 @router.post("/habit/count_track/")
@@ -215,53 +146,19 @@ async def track_habit(
 
 
 @router.post("/habit/track_all/")
-async def track_all(
-    telegram_id: TelegramId, session: AsyncSession = Depends(get_async_session)
-):
-    find = await session.execute(
-        select(Users)
-        .where(Users.telegram_id == telegram_id.telegram_id)
-        .options(selectinload(Users.habits))
-    )
-    find_scalar = find.scalars()
-    for items in find_scalar:
-        result = [habit_info.id for habit_info in items.habits]
-
-        find_in = await session.execute(
-            select(HabitTracking).where(
-                and_(HabitTracking.habit_id.in_(result), HabitTracking.count < 21)
-            )
-        )
-        find_in_scalar = find_in.scalars()
-        result = [
-            {
-                "name_habit": f"{i.habits.name_habit}",
-            }
-            for i in find_in_scalar
-        ]
-
+async def track_all(telegram_id: TelegramId = Depends(function_track_all)):
+    result = telegram_id
+    if result:
         return result
+    raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,)
 
 
 @router.post("/habit/habit_stats/")
-async def habit_stats(
-    telegram_id: TelegramId, session: AsyncSession = Depends(get_async_session)
-):
-    find_user = (
-        select(Users.id).where(Users.telegram_id == telegram_id.telegram_id)
-    ).subquery()
-
-    result = await session.execute(
-        select(Habits.name_habit, HabitTracking.count)
-        .join(Habits)
-        .where(Habits.user_id == find_user.c.id)
-    )
-
-    finish = result.all()
-
-    result = [{"name_habit": i[0], "count": i[1]} for i in finish]
-
-    return result
+async def habit_stats(telegram_id: TelegramId = Depends(function_habit_stats)):
+    result = telegram_id
+    if result:
+        return result
+    raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,)
 
 
 # @router.get("/test")

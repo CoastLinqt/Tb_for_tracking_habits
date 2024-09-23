@@ -4,13 +4,15 @@ from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, update
+from sqlalchemy import select, and_, update, delete
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import selectinload
 
 from database.database import get_async_session
 from models import Users, Habits, HabitTracking
 from utils import validate_password, decode_jwt
-from schemas import UserSchema, AddHabits, EditTrackHabit
+from schemas import UserSchema, AddHabits, EditTrackHabit, TelegramId
+
 
 
 oauth_scheme = OAuth2PasswordBearer(
@@ -79,6 +81,15 @@ async def get_current_active_auth_user(
     )
 
 
+async def function_user_check_db(telegram_id: TelegramId, session: AsyncSession = Depends(get_async_session)):
+    find_user_db = await session.execute(
+        select(Users).where(Users.telegram_id == telegram_id.telegram_id)
+    )
+    result = find_user_db.scalar()
+
+    return result
+
+
 async def add_habit(
     data: AddHabits, session: AsyncSession = Depends(get_async_session)
 ):
@@ -110,6 +121,150 @@ async def add_habit(
     except IntegrityError as e:
         await session.rollback()
         print("habit's already been added.")
+
+
+async def function_edit_habit(data: EditTrackHabit, session: AsyncSession = Depends(get_async_session)):
+    try:
+        find_id_user = (
+            select(Users.id).filter(Users.telegram_id == data.telegram_id).subquery()
+        )
+
+        if data.habit_goal and data.description:
+            await session.execute(
+                update(Habits)
+                .values(
+                    description=data.description, habit_goal=data.habit_goal
+                )
+                .filter(
+                    and_(
+                        Habits.name_habit == data.name_habit,
+                        Habits.user_id == find_id_user.c.id,
+                    )
+                )
+            )
+        else:
+            if data.habit_goal:
+                await session.execute(
+                    update(Habits)
+                    .values(habit_goal=data.habit_goal)
+                    .filter(
+                        and_(
+                            Habits.name_habit == data.name_habit,
+                            Habits.user_id == find_id_user.c.id,
+                        )
+                    )
+                )
+
+            elif data.description:
+                await session.execute(
+                    update(Habits)
+                    .values(description=data.description)
+                    .filter(
+                        and_(
+                            Habits.name_habit == data.name_habit,
+                            Habits.user_id == find_id_user.c.id,
+                        )
+                    )
+                )
+
+        await session.commit()
+
+        return True
+    except IntegrityError as e:
+        await session.rollback()
+        print("Error add.")
+
+
+async def function_track_all(telegram_id: TelegramId, session: AsyncSession = Depends(get_async_session)):
+    find = await session.execute(
+        select(Users)
+        .where(Users.telegram_id == telegram_id.telegram_id)
+        .options(selectinload(Users.habits))
+    )
+    find_scalar = find.scalars()
+    for items in find_scalar:
+        result = [habit_info.id for habit_info in items.habits]
+
+        find_in = await session.execute(
+            select(HabitTracking).where(
+                and_(HabitTracking.habit_id.in_(result), HabitTracking.count < 21)
+            )
+        )
+        find_in_scalar = find_in.scalars()
+        result = [
+            {
+                "name_habit": f"{i.habits.name_habit}",
+            }
+            for i in find_in_scalar
+        ]
+
+        return result
+
+
+async def function_process_habits(telegram_id: TelegramId, session: AsyncSession = Depends(get_async_session)):
+    try:
+        find = await session.execute(
+            select(Users)
+            .where(Users.telegram_id == telegram_id.telegram_id)
+            .options(selectinload(Users.habits))
+        )
+        result_db = find.scalars()
+
+        if result_db:
+            for i in result_db:
+                result = [
+                    {
+                        "name_habit": f"{e.name_habit}",
+                        "description": f"{e.description}",
+                        "habit_goal": f"{e.habit_goal}",
+                    }
+                    for e in i.habits
+                ]
+                return result
+
+    except IntegrityError as e:
+        await session.rollback()
+        print("Error find info habit.")
+
+
+async def function_habit_stats(telegram_id: TelegramId, session: AsyncSession = Depends(get_async_session)):
+    find_user = (
+        select(Users.id).where(Users.telegram_id == telegram_id.telegram_id)
+    ).subquery()
+
+    result = await session.execute(
+        select(Habits.name_habit, HabitTracking.count)
+        .join(Habits)
+        .where(Habits.user_id == find_user.c.id)
+    )
+
+    finish = result.all()
+
+    result = [{"name_habit": i[0], "count": i[1]} for i in finish]
+
+    return result
+
+
+async def function_delete_habit(data_habit: EditTrackHabit, session: AsyncSession = Depends(get_async_session)):
+    try:
+        find_id_user = (
+            select(Users.id).filter(Users.telegram_id == data_habit.telegram_id).subquery()
+        )
+
+        await session.execute(
+            delete(Habits).where(
+                and_(
+                    Habits.name_habit == data_habit.name_habit,
+                    Habits.user_id == find_id_user.c.id,
+                )
+            )
+        )
+        await session.commit()
+        return True
+
+    except IntegrityError as e:
+        await session.rollback()
+        print("Error delete.")
 
 
 async def function_update_track_habit(
