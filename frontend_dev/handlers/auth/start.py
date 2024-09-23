@@ -16,12 +16,13 @@ def bot_start(m: Message):
     result = check_user_db(telegram_id=m.from_user.id)
 
     if result.status_code == 401:
-        mes = bot.send_message(
+        bot.send_message(
             m.chat.id,
             "Вы не зарегистрированы, пожалуйста введите пароль(Запомните его,"
             " сообщение удалится):",
         )
-        bot.register_next_step_handler(message=mes, callback=registration)
+        bot.set_state(m.from_user.id, States.set_pass, m.chat.id)
+        # bot.register_next_step_handler(message=mes, callback=registration)
 
     elif result.status_code == 200:
         bot.reply_to(
@@ -30,20 +31,19 @@ def bot_start(m: Message):
         )
 
     else:
-
         bot.reply_to(
             m,
             f"Ошибка бота, повторите запрос /start",
         )
 
 
+@bot.message_handler(state=States.set_pass)
 def registration(m: Message):
     message_pass = m.text
 
-    if not message_pass.startswith('/'):
+    if message_pass:
         bot.delete_message(chat_id=m.chat.id, message_id=m.message_id)
         if len(message_pass) > 8:
-
             with bot.retrieve_data(m.from_user.id, m.chat.id) as data:
                 data["message_pass"] = message_pass
 
@@ -65,14 +65,7 @@ def registration(m: Message):
                     f" Воспользуйтесь командами бота /help",
                 )
         else:
-
             bot.send_message(
                 m.chat.id,
                 "Пароль слабоват должно быть больше 8 знаков. Напишите еще раз пароль.",
             )
-    else:
-
-        bot.send_message(
-            m.chat.id,
-            "Пароль не может содержать команду ",
-        )
