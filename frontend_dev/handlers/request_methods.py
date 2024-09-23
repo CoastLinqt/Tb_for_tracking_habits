@@ -35,3 +35,10 @@ def edit_habit_request(data: dict):
 
 def delete_habit_request(data: dict):
     requests.delete(url=f"{BACK_URL}/habit/delete/", data=json.dumps(data))
+
+def habit_track_request(data: dict):
+    response = requests.post(
+        url=f"{BACK_URL}/habit/track_all/", data=json.dumps(data)
+    )
+
+    return response

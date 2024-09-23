@@ -12,14 +12,7 @@ from frontend_dev.handlers.request_methods import (
 from frontend_dev.keyboards.keyboards_answr import (
     pick_track,
 )
-
-dict_new = [
-    {"name_habit": "Test", "habit_goal": "habit_goal", "description": "description"},
-    {"name_habit": "Ok", "habit_goal": "habit_goal", "description": "description"},
-    {"name_habit": "next", "habit_goal": "habit_goal", "description": "description"},
-    {"name_habit": "right", "habit_goal": "habit_goal", "description": "description"},
-    {"name_habit": "left", "habit_goal": "habit_goal", "description": "description"},
-]
+from .request_methods import habit_track_request
 
 
 @bot.message_handler(
@@ -37,9 +30,8 @@ def track_habit(message):
         )
 
     elif result.status_code == 200:
-        response = requests.post(
-            url=f"{BACK_URL}/habit/track_all/", data=json.dumps(dict_id)
-        )
+
+        response = habit_track_request(data=dict_id)
 
         result_response = response.json()
         if result_response:
