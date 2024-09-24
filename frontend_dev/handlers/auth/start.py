@@ -6,7 +6,7 @@ from telebot.types import Message
 from frontend_dev.loader import bot
 from frontend_dev.states.states_bot import States
 from frontend_dev.config_info.config import BACK_URL
-from frontend_dev.handlers.request_methods import check_user_db
+from frontend_dev.handlers.request_methods import check_user_db, register_check_request
 
 
 @bot.message_handler(commands=["start"])
@@ -18,22 +18,20 @@ def bot_start(m: Message):
     if result.status_code == 401:
         bot.send_message(
             m.chat.id,
-            "Вы не зарегистрированы, пожалуйста введите пароль(Запомните его,"
-            " сообщение удалится):",
+            "You are not registered, please enter your password(Remember it, the message will be deleted:",
         )
         bot.set_state(m.from_user.id, States.set_pass, m.chat.id)
-        # bot.register_next_step_handler(message=mes, callback=registration)
 
     elif result.status_code == 200:
         bot.reply_to(
             m,
-            f"Здравствуйте, {m.from_user.full_name}. Воспользуйтесь командами бота /help",
+            f"Hello, {m.from_user.full_name}. Use the bot's commands /help",
         )
 
     else:
         bot.reply_to(
             m,
-            f"Ошибка бота, повторите запрос /start",
+            f"Bot error, repeat the request /start",
         )
 
 
@@ -54,18 +52,16 @@ def registration(m: Message):
                 "is_active": True,
             }
 
-            check_user = requests.post(
-                url=f"{BACK_URL}/token/",
-                data=json.dumps(data),
-            )
+            check_user = register_check_request(data=data)
+
             if check_user.status_code == 200:
                 bot.send_message(
                     m.chat.id,
-                    f"Вы успешно зарегистрированы! {m.from_user.full_name}."
-                    f" Воспользуйтесь командами бота /help",
+                    f"You have successfully registered! {m.from_user.full_name}."
+                    f"Use the bot's commands /help",
                 )
         else:
             bot.send_message(
                 m.chat.id,
-                "Пароль слабоват должно быть больше 8 знаков. Напишите еще раз пароль.",
+                "The password is weak, it should be more than 8 characters. Write the password again.",
             )

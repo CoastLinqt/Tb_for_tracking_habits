@@ -1,3 +1,5 @@
+import datetime
+
 from fastapi import Depends, HTTPException, APIRouter, status
 from fastapi.security import OAuth2PasswordBearer
 
@@ -7,7 +9,7 @@ from sqlalchemy.orm import selectinload
 
 from database.database import get_async_session
 from models import Users, Habits, HabitTracking
-from schemas import UserSchema, TokenInfo, TelegramId, AddHabits, EditTrackHabit
+from schemas import UserSchema, TokenInfo, TelegramId, AddHabits, EditTrackHabit, SetReminder
 from utils import hash_password, encode_jwt
 from methods import (
     authenticate_user,
@@ -20,7 +22,9 @@ from methods import (
     function_process_habits,
     function_habit_stats,
     function_user_check_db,
+    function_set_reminder,
 )
+
 
 
 oauth_scheme = OAuth2PasswordBearer(
@@ -68,10 +72,7 @@ async def auth_user_issue_jwt(user: UserSchema = Depends(authenticate_user)):
 
 
 @router.post("/check_user/")
-async def user_check_db(
-    telegram_id: TelegramId = Depends(function_user_check_db)
-):
-
+async def user_check_db(telegram_id: TelegramId = Depends(function_user_check_db)):
     if telegram_id is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -91,7 +92,6 @@ async def auth_user_check_self_info(
 
 @router.post("/user/me/add_habit/")
 async def add_habit(habit: AddHabits = Depends(add_habit)):
-
     if habit is True:
         raise HTTPException(
             status_code=status.HTTP_200_OK,
@@ -130,13 +130,16 @@ async def edit_habit(data_habit: EditTrackHabit = Depends(function_edit_habit)):
         raise HTTPException(
             status_code=status.HTTP_200_OK,
         )
-    raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,)
+    raise HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    )
 
 
 @router.post("/habit/count_track/")
 async def track_habit(
     tracking_habit: EditTrackHabit = Depends(function_update_track_habit),
 ):
+    print(tracking_habit)
     if tracking_habit:
         raise HTTPException(
             status_code=status.HTTP_200_OK,
@@ -149,8 +152,11 @@ async def track_habit(
 async def track_all(telegram_id: TelegramId = Depends(function_track_all)):
     result = telegram_id
     if result:
+        print(result)
         return result
-    raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,)
+    raise HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    )
 
 
 @router.post("/habit/habit_stats/")
@@ -158,14 +164,13 @@ async def habit_stats(telegram_id: TelegramId = Depends(function_habit_stats)):
     result = telegram_id
     if result:
         return result
+    raise HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    )
+
+
+@router.post("/habit/set_reminder/")
+async def set_reminder(data: SetReminder = Depends(function_set_reminder),):
+    if data:
+        return data
     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,)
-
-
-# @router.get("/test")
-# async def dsa(session: AsyncSession = Depends(get_async_session)):
-#
-#     data = {'telegram_id': 138217207}
-#     result = await session.execute(select(Habits.name_habit, HabitTracking.count).join(Habits).join(Users, Users.telegram_id == data['telegram_id']))
-#     finish = result.all()
-#
-#     return finish

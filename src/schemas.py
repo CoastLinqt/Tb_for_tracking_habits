@@ -62,3 +62,11 @@ class EditTrackHabit(BaseModel):
     name_habit: str
     habit_goal: str | None = None
     description: str | None = None
+
+
+class SetReminder(BaseModel):
+    telegram_id: int
+    name_habit: str
+    habit_date: str
+    time: str
+
