@@ -80,7 +80,7 @@ def processset_reminder(call: CallbackQuery):
     calendar_first, step = DetailedTelegramCalendar(
         calendar_id=1,
         locale="ru",
-        min_date=datetime.date.today() + timedelta(days=1),
+        min_date=datetime.date.today(),
         max_date=datetime.date.today() + relativedelta(months=2),
     ).build()
 
@@ -94,8 +94,12 @@ def process_habit_date(
     call: CallbackQuery,
 ):
     result, key, step = DetailedTelegramCalendar(
-        calendar_id=1, locale="ru", min_date=datetime.date.today()
+        calendar_id=1,
+        locale="ru",
+        min_date=datetime.date.today() + timedelta(days=1),
+        max_date=datetime.date.today() + relativedelta(months=6)
     ).process(call.data)
+
     if not result and key:
         bot.edit_message_text(
             f"Choose {LSTEP[step]}",
