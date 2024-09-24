@@ -44,9 +44,7 @@ def habit_track_request(data: dict):
 
 
 def count_track_request(data: dict):
-    result = requests.post(
-        url=f"{BACK_URL}/habit/count_track/", data=json.dumps(data)
-    )
+    result = requests.post(url=f"{BACK_URL}/habit/count_track/", data=json.dumps(data))
     return result
 
 

@@ -86,12 +86,11 @@ async def get_current_active_auth_user(
 async def function_user_check_db(
     telegram_id: TelegramId, session: AsyncSession = Depends(get_async_session)
 ):
-    print(telegram_id.telegram_id)
+
     find_user_db = await session.execute(
         select(Users).where(Users.telegram_id == telegram_id.telegram_id)
     )
     result = find_user_db.scalar()
-    print(result)
 
     return result
 
@@ -190,14 +189,16 @@ async def function_track_all(
         .options(selectinload(Users.habits))
     )
     find_scalar = find.scalars()
-    print(find_scalar,'1')
+
     for items in find_scalar:
         result_items_id = [habit_info.id for habit_info in items.habits]
-        print(result_items_id,'2')
 
         find_in = await session.execute(
             select(HabitTracking).where(
-                and_(HabitTracking.habit_id.in_(result_items_id), HabitTracking.count < 21)
+                and_(
+                    HabitTracking.habit_id.in_(result_items_id),
+                    HabitTracking.count < 21,
+                )
             )
         )
         find_in_scalar = find_in.scalars()
@@ -248,7 +249,8 @@ async def function_habit_stats(
     ).subquery()
 
     result = await session.execute(
-        select(Habits.name_habit, HabitTracking.count).select_from(HabitTracking)
+        select(Habits.name_habit, HabitTracking.count)
+        .select_from(HabitTracking)
         .join(Habits)
         .where(Habits.user_id == find_user.c.id)
     )
@@ -289,20 +291,17 @@ async def function_delete_habit(
 async def function_update_track_habit(
     data: EditTrackHabit, session: AsyncSession = Depends(get_async_session)
 ):
-
     select_find_id_user = (
         select(Users).filter(Users.telegram_id == data.telegram_id).subquery()
     )
 
     select_find_habit = (
-        select(Habits)
-        .filter(
+        select(Habits).filter(
             and_(
                 Habits.name_habit == data.name_habit,
                 Habits.user_id == select_find_id_user.c.id,
             )
         )
-
     ).subquery()
 
     await session.execute(
@@ -316,26 +315,33 @@ async def function_update_track_habit(
     return True
 
 
-async def function_set_reminder(data: SetReminder,
-                                session: AsyncSession = Depends(get_async_session)):
+async def function_set_reminder(
+    data: SetReminder, session: AsyncSession = Depends(get_async_session)
+):
     day = data.habit_date[0:2]
     month = data.habit_date[3:5]
     year = data.habit_date[-4:]
     hours = data.time[0:2]
     minutes = data.time[-2:]
-    time_reminder = datetime.datetime.combine(datetime.date(int(year), int(month), int(day)),
-                                              datetime.time(int(hours), int(minutes)))
+    time_reminder = datetime.datetime.combine(
+        datetime.date(int(year), int(month), int(day)),
+        datetime.time(int(hours), int(minutes)),
+    )
 
-    find_user = (
-        select(Users).where(Users.telegram_id == data.telegram_id)
-    ).subquery()
+    find_user = (select(Users).where(Users.telegram_id == data.telegram_id)).subquery()
 
     find_habit = (
-        select(Habits).where(and_(Habits.user_id == find_user.c.id, Habits.name_habit == data.name_habit))
+        select(Habits).where(
+            and_(Habits.user_id == find_user.c.id, Habits.name_habit == data.name_habit)
+        )
     ).subquery()
-    await session.execute(update(HabitTracking).values(alert_time=time_reminder).where(
-        and_(HabitTracking.habit_id == find_habit.c.id, HabitTracking.count < 21)))
+    await session.execute(
+        update(HabitTracking)
+        .values(alert_time=time_reminder)
+        .where(
+            and_(HabitTracking.habit_id == find_habit.c.id, HabitTracking.count < 21)
+        )
+    )
     await session.commit()
 
     return {"name_habit": data.name_habit, "habit_date": time_reminder}
-

@@ -1,24 +1,23 @@
-import json
-
-import requests
 from telebot.types import CallbackQuery
 
 from frontend_dev.loader import bot
-from frontend_dev.config_info.config import BACK_URL
-from frontend_dev.handlers.request_methods import (
+from frontend_dev.requests_methods.request_methods import (
     check_user_db,
+    habit_track_request,
+    count_track_request,
 )
 
 from frontend_dev.keyboards.keyboards_answr import (
     pick_track,
 )
-from .request_methods import habit_track_request, count_track_request
 
 
 @bot.message_handler(
     commands=["track_habit"],
 )
 def track_habit(message):
+    """A handler that keeps track of completed habits"""
+
     dict_id = {"telegram_id": message.from_user.id}
 
     result = check_user_db(telegram_id=message.from_user.id)
@@ -67,5 +66,6 @@ def process_track_habit(call: CallbackQuery):
 
         elif result.status_code == 500:
             bot.send_message(
-                call.from_user.id, "You have completely fulfilled the habit, congratulations!!"
+                call.from_user.id,
+                "You have completely fulfilled the habit, congratulations!!",
             )

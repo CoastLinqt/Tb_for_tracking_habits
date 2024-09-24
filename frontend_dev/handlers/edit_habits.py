@@ -1,7 +1,7 @@
 from telebot.types import Message, CallbackQuery
 
 from frontend_dev.loader import bot
-from frontend_dev.handlers.request_methods import (
+from frontend_dev.requests_methods.request_methods import (
     check_user_db,
     edit_habit_request,
     delete_habit_request,
@@ -19,6 +19,10 @@ from frontend_dev.keyboards.keyboards_answr import (
     commands=["edit_habit"],
 )
 def edit_habit(message: Message):
+    """The handler requests to delete or edit the habit.
+    The data is sent to the server and entered into the database
+     and the 200 status is returned """
+
     dict_id = {"telegram_id": message.from_user.id}
 
     result = check_user_db(telegram_id=message.from_user.id)
@@ -81,9 +85,7 @@ def callback_edit_habit(call: CallbackQuery):
 
         result = choice_edit_habit()
 
-        bot.send_message(
-            call.from_user.id, f"Let's start editing", reply_markup=result
-        )
+        bot.send_message(call.from_user.id, f"Let's start editing", reply_markup=result)
 
 
 @bot.callback_query_handler(

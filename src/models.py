@@ -1,4 +1,12 @@
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Boolean, BigInteger
+from sqlalchemy import (
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Boolean,
+    BigInteger,
+)
 from sqlalchemy.orm import DeclarativeBase, relationship
 from sqlalchemy.types import LargeBinary
 from database.database import engine  # type: ignore

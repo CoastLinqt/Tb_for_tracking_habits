@@ -1,7 +1,7 @@
 import os
 
 BOT_TOKEN = ""
-BACK_URL = " "
+BACK_URL = ""
 
 
 DEFAULT_COMMANDS = (

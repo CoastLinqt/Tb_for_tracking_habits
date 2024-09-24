@@ -4,6 +4,7 @@ from frontend_dev.loader import bot
 
 @bot.message_handler(commands=["help"])
 def bot_help(m: Message):
+    """The handler helps user's with choose commands"""
     text = (
         "/help — help with bot commands.\n"
         "/start — user registration.\n"

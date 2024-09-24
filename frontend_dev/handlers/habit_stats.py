@@ -4,14 +4,17 @@ import requests
 from telebot.types import Message
 from frontend_dev.loader import bot
 from frontend_dev.config_info.config import BACK_URL
-from .help_func import track_stats
-from .request_methods import check_user_db
+from frontend_dev.helping_func.help_func import track_stats
+from frontend_dev.requests_methods.request_methods import check_user_db
 
 
 @bot.message_handler(
     commands=["habit_stats"],
 )
 def habit_stats(message: Message):
+    """The handler receives the client's data and processes it,
+     showing the client's statistics """
+
     data_id = {"telegram_id": message.from_user.id}
 
     result = check_user_db(telegram_id=message.from_user.id)
