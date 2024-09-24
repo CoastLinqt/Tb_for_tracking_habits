@@ -69,4 +69,3 @@ class SetReminder(BaseModel):
     name_habit: str
     habit_date: str
     time: str
-

@@ -3,13 +3,16 @@ import requests
 
 from telebot.types import Message
 from frontend_dev.loader import bot
-from .request_methods import check_user_db
+from frontend_dev.requests_methods.request_methods import check_user_db
 from frontend_dev.config_info.config import BACK_URL
-from .help_func import create_table
+from frontend_dev.helping_func.help_func import create_table
 
 
 @bot.message_handler(commands=["habits"])
 def send_table(message: Message):
+    """The handler receives data from the database from the server
+    and shows it to the client"""
+
     result = check_user_db(telegram_id=message.from_user.id)
 
     if result.status_code == 401:

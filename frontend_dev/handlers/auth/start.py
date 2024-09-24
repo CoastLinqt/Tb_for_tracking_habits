@@ -1,17 +1,14 @@
-import json
-import requests
-
 from telebot.types import Message
 
 from frontend_dev.loader import bot
 from frontend_dev.states.states_bot import States
-from frontend_dev.config_info.config import BACK_URL
-from frontend_dev.handlers.request_methods import check_user_db, register_check_request
+from frontend_dev.requests_methods.request_methods import check_user_db, register_check_request
 
 
 @bot.message_handler(commands=["start"])
 def bot_start(m: Message):
-    """Запуск бота и приветствие"""
+    """The handler that runs the bot checks whether the user is registered or not,
+     if yes, lets him in, otherwise ask for a password"""
 
     result = check_user_db(telegram_id=m.from_user.id)
 

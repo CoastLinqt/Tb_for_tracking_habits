@@ -12,18 +12,21 @@ from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
 
 from frontend_dev.keyboards.keyboards_answr import pick_time
 from frontend_dev.states.states_bot import States
-from frontend_dev.handlers.request_methods import (
+from frontend_dev.requests_methods.request_methods import (
     check_user_db,
     set_reminder_request,
     habit_track_request,
 )
-from .middleware import send_message_middleware
+from frontend_dev.middleware.middleware import send_message_middleware
 
 
 @bot.message_handler(
     commands=["set_reminder"],
 )
 def set_reminder(message: Message):
+    """The handler sends specific data to the server, processes it,
+     and sends a notification on a given date that you need to perform the habit"""
+
     dict_id = {"telegram_id": message.from_user.id}
 
     result = check_user_db(telegram_id=message.from_user.id)
@@ -48,7 +51,9 @@ def set_reminder(message: Message):
 
             bot.set_state(message.from_user.id, States.set_reminder, message.chat.id)
         else:
-            bot.send_message(message.chat.id, "You haven't had a habit yet or you completed! /habits")
+            bot.send_message(
+                message.chat.id, "You haven't had a habit yet or you completed! /habits"
+            )
 
     else:
         bot.reply_to(
@@ -64,7 +69,8 @@ def processset_reminder(call: CallbackQuery):
     bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
 
     bot.send_message(
-        call.from_user.id, f"Now you need to choose a deadline for completing the habit."
+        call.from_user.id,
+        f"Now you need to choose a deadline for completing the habit.",
     )
 
     with bot.retrieve_data(call.from_user.id, call.message.chat.id) as data:
@@ -74,7 +80,6 @@ def processset_reminder(call: CallbackQuery):
     calendar_first, step = DetailedTelegramCalendar(
         calendar_id=1,
         locale="ru",
-
         min_date=datetime.date.today() + timedelta(days=1),
         max_date=datetime.date.today() + relativedelta(months=2),
     ).build()
@@ -88,7 +93,6 @@ def processset_reminder(call: CallbackQuery):
 def process_habit_date(
     call: CallbackQuery,
 ):
-
     result, key, step = DetailedTelegramCalendar(
         calendar_id=1, locale="ru", min_date=datetime.date.today()
     ).process(call.data)
@@ -128,7 +132,7 @@ def data_infi_about_user(message: Message):
         scheduler.add_job(
             send_message_middleware,
             "date",
-            run_date=response_result['habit_date'],
+            run_date=response_result["habit_date"],
             kwargs={
                 "my_bot": bot,
                 "chat_id": message.from_user.id,

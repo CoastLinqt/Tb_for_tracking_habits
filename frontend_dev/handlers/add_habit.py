@@ -3,11 +3,16 @@ from telebot.types import Message
 
 from frontend_dev.loader import bot
 from frontend_dev.states.states_bot import States
-from .request_methods import check_user_db, add_habit_db
+from frontend_dev.requests_methods.request_methods import check_user_db, add_habit_db
 
 
 @bot.message_handler(commands=["add_habit"])
 def add_habit(message: Message):
+    """The handler asks several questions,
+     the name, description and purpose of the habit,
+      and later sends the information to the server.
+      The server processes and returns the 200 status """
+
     result = check_user_db(telegram_id=message.from_user.id)
 
     if result.status_code == 401:
@@ -73,7 +78,8 @@ def process_habit_goal(message: Message):
 
         if add_habit_db(data=data):
             bot.send_message(
-                message.chat.id, "A new habit has been successfully added!Check it out /habits"
+                message.chat.id,
+                "A new habit has been successfully added!Check it out /habits",
             )
 
         else:
