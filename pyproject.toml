@@ -48,6 +48,8 @@ prettytable = "^3.11.0"
 python-multipart = "^0.0.10"
 alembic = "^1.13.2"
 matplotlib = "^3.9.2"
+apscheduler = "^3.10.4"
+python-telegram-bot-calendar = "^1.0.5"
 
 
 [tool.poetry.group.dev.dependencies]

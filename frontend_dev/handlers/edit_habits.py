@@ -26,7 +26,7 @@ def edit_habit(message: Message):
     if result.status_code == 401:
         bot.send_message(
             message.chat.id,
-            "Вы не зарегистрированы, /start",
+            "You're not registered, /start",
         )
 
     elif result.status_code == 200:
@@ -35,13 +35,13 @@ def edit_habit(message: Message):
         result_response = response.json()
 
         if not result_response:
-            bot.reply_to(message, f"У вас еще нет привычек. /add_habit")
+            bot.reply_to(message, f"You haven't had habits yet. Add /add_habit")
         else:
             result = pick_edit(data=result_response)
 
             bot.send_message(
                 message.from_user.id,
-                f"{message.from_user.full_name}, ваши привычки, выберите.",
+                f"{message.from_user.full_name}, Your habits, choose.",
                 reply_markup=result,
             )
             bot.set_state(message.from_user.id, States.save_habit_name, message.chat.id)
@@ -49,7 +49,7 @@ def edit_habit(message: Message):
     else:
         bot.reply_to(
             message,
-            f"Ошибка бота, повторите запрос /add_habit",
+            f"Error bot, repeat request /edit_habit",
         )
 
 
@@ -67,12 +67,12 @@ def process_edit_habit(call: CallbackQuery):
 
         bot.send_message(
             call.from_user.id,
-            f"Выберите: {name_habit[1:]}",
+            f"Choose: {name_habit[1:]}",
             reply_markup=buttons_choice,
         )
 
 
-@bot.callback_query_handler(func=lambda call: call.data == "Редактировать")
+@bot.callback_query_handler(func=lambda call: call.data == "Edit")
 def callback_edit_habit(call: CallbackQuery):
     if call.data:
         bot.delete_message(
@@ -82,12 +82,12 @@ def callback_edit_habit(call: CallbackQuery):
         result = choice_edit_habit()
 
         bot.send_message(
-            call.from_user.id, f"Приступаем редактировать", reply_markup=result
+            call.from_user.id, f"Let's start editing", reply_markup=result
         )
 
 
 @bot.callback_query_handler(
-    func=lambda call: call.data == "Удалить",
+    func=lambda call: call.data == "Delete",
 )
 def delete_habit(call: CallbackQuery):
     if call.data:
@@ -102,7 +102,7 @@ def delete_habit(call: CallbackQuery):
 
         bot.send_message(
             call.from_user.id,
-            f'Привычка "{data["name_habit"].capitalize()}" была удалена.',
+            f'Habit "{data["name_habit"].capitalize()}" was deleted.',
         )
 
         data.clear()
@@ -119,7 +119,7 @@ def pick_goal_habit(call: CallbackQuery):
         with bot.retrieve_data(call.from_user.id, call.message.chat.id) as data:
             mes = bot.send_message(
                 call.from_user.id,
-                f"Введите новую цель для привычки {data['name_habit']}:",
+                f"Enter a new goal for the habit {data['name_habit']}:",
             )
             bot.register_next_step_handler(message=mes, callback=next_pick_goal_habit)
 
@@ -142,8 +142,8 @@ def next_pick_goal_habit(message):
     else:
         bot.reply_to(
             message,
-            f"Количество символов и букв в сумме не должно превышать 20."
-            f" У вас {length}.Повторите запрос /edit_habit",
+            f"The total number of characters and letters must not exceed 20."
+            f" You've {length}.Repeat request /edit_habit",
         )
 
 
@@ -156,7 +156,7 @@ def pick_description(call: CallbackQuery):
         with bot.retrieve_data(call.from_user.id, call.message.chat.id) as data:
             mes = bot.send_message(
                 call.from_user.id,
-                f"Введите новое описание для привычки {data['name_habit']}:",
+                f"Enter a new description for the habit {data['name_habit']}:",
             )
 
             bot.register_next_step_handler(
@@ -174,13 +174,13 @@ def next_pick_description_habit(message: Message):
 
         edit_habit_request(data=data)
 
-        bot.send_message(message.from_user.id, f"Успешно!")
+        bot.send_message(message.from_user.id, f"Completed!")
         data.clear()
     else:
         bot.reply_to(
             message,
-            f"Количество символов и букв в сумме не должно превышать 50."
-            f" У вас {length}. Повторите запрос /edit_habit",
+            f"The total number of characters and letters must not exceed 50."
+            f" You've {length}. Repeat request /edit_habit",
         )
 
 
@@ -193,7 +193,7 @@ def pick_all(call: CallbackQuery):
         with bot.retrieve_data(call.from_user.id, call.message.chat.id) as data:
             mes = bot.send_message(
                 call.from_user.id,
-                f"Введите новую цель для привычки {data['name_habit']}: ",
+                f"Enter a new goal for the habit {data['name_habit']}: ",
             )
 
             bot.register_next_step_handler(message=mes, callback=next_pick_goal_all)
@@ -209,7 +209,7 @@ def next_pick_goal_all(message):
 
         mes = bot.send_message(
             message.chat.id,
-            f"Введите новое описание для привычки {data['name_habit']}:",
+            f"Enter a new description for the habit {data['name_habit']}:",
         )
 
         bot.register_next_step_handler(message=mes, callback=next_pick_description_all)
@@ -217,8 +217,8 @@ def next_pick_goal_all(message):
     else:
         bot.reply_to(
             message,
-            f"Количество символов и букв в сумме не должно превышать 20."
-            f" У вас {length}. Повторите запрос /edit_habit",
+            f"The total number of characters and letters must not exceed 20."
+            f" У вас {length}. Repeat request  /edit_habit",
         )
 
 
@@ -236,6 +236,6 @@ def next_pick_description_all(message: Message):
     else:
         bot.reply_to(
             message,
-            f"Количество символов и букв в сумме не должно превышать 50."
-            f" У вас {length}. Повторите запрос /edit_habit",
+            f"The total number of characters and letters must not exceed 50."
+            f" You've {length}. Repeat request /edit_habit",
         )

@@ -19,7 +19,7 @@ def habit_stats(message: Message):
     if result.status_code == 401:
         bot.send_message(
             message.chat.id,
-            "Вы не зарегистрированы, /start",
+            "You're not registered, /start",
         )
 
     elif result.status_code == 200:
@@ -39,11 +39,11 @@ def habit_stats(message: Message):
         else:
             bot.send_message(
                 chat_id=message.chat.id,
-                text=f"У вас еще нет привычек. Добавьте /add_habit",
+                text=f"You haven't had habits yet.Add Добавьте /add_habit",
             )
 
     else:
         bot.reply_to(
             message,
-            f"Ошибка бота, повторите запрос /start",
+            f"Error bot, repeat request /habit_stats",
         )

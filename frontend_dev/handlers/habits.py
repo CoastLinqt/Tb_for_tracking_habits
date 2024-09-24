@@ -6,10 +6,6 @@ from frontend_dev.loader import bot
 from .request_methods import check_user_db
 from frontend_dev.config_info.config import BACK_URL
 from .help_func import create_table
-#
-# dict_new = [{"name_habit": "dasdasfafadfagadgads", "habit_goal": "dasdasfafadfagadgads", "description": "dasdasfafadfadgadgagdsadadasddsdsadadsaddasgadgads", "result": "V"},
-#             {"name_habit": "dasdasfafadfagadgads", "habit_goal": "dasdasfafadfagadgads", "description": "dasdasfafadfadgadgagdsadadasddsdsadadsaddasgadgads", "result": "-"},
-#            ]
 
 
 @bot.message_handler(commands=["habits"])
@@ -19,7 +15,7 @@ def send_table(message: Message):
     if result.status_code == 401:
         bot.send_message(
             message.chat.id,
-            "Вы не зарегистрированы, /start",
+            "You're not registered, /start",
         )
 
     elif result.status_code == 200:
@@ -30,22 +26,21 @@ def send_table(message: Message):
         info_habits = result_db.json()
 
         if result_db.status_code == 200:
-
             table = create_table(data=info_habits)
 
             bot.send_message(
                 chat_id=message.chat.id,
-                text=f"Ваши привычки {message.from_user.full_name} ```{table}```",
+                text=f"Your habits {message.from_user.full_name} ```{table}```",
                 parse_mode="Markdown",
             )
         else:
             bot.send_message(
                 chat_id=message.chat.id,
-                text=f"У вас еще нет привычек. Добавьте /add_habit",
+                text=f"You haven't had habits yet. Add /add_habit",
             )
 
     else:
         bot.reply_to(
             message,
-            f"Ошибка бота, повторите запрос /add_habit",
+            f"Error bot, repeat request /habits",
         )

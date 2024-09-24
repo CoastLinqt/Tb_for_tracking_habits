@@ -5,13 +5,13 @@ from frontend_dev.loader import bot
 @bot.message_handler(commands=["help"])
 def bot_help(m: Message):
     text = (
-        "/help — помощь по командам бота.\n"
-        "/start — регистрация пользователя.\n"
-        "/add_habit — информация о новой привычке.\n"
-        "/habits — получение списка привычек.\n"
-        "/edit_habit — выбрать привычку для редактирования.\n"
-        "/track_habit — выбирает привычку для отметки выполнения.\n"
-        "/habit_stats — статистика выполнения привычек.\n"
-        "/set_reminder — напоминание для отметки выполнения привычек.\n"
+        "/help — help with bot commands.\n"
+        "/start — user registration.\n"
+        "/add_habit — information about a new habit.\n"
+        "/habits — getting a list of habits.\n"
+        "/edit_habit — choose a habit to edit.\n"
+        "/track_habit — selects a habit to mark the completion.\n"
+        "/habit_stats — statistics of habit fulfillment.\n"
+        "/set_reminder — a reminder to mark the fulfillment of habits.\n"
     )
     bot.send_message(m.chat.id, text, parse_mode="html")

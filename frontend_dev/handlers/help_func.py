@@ -5,21 +5,21 @@ from typing import List
 def create_table(data: List[dict]):
     table = pt.PrettyTable(
         [
-            "num",
-            "Название",
-            "Описание",
-            "Цель",
+            "№",
+            "Name",
+            "Description",
+            "Goal",
         ]
     )
-    table.align["num"] = "R"
-    table.align["Name"] = "r"
-    table.align["Discr"] = "r"
-    table.align["Goal"] = "r"
+    table.align["num"] = "r"
+    table.align["Name"] = "m"
+    table.align["Discr"] = "m"
+    table.align["Goal"] = "m"
 
     table._max_width = {
-        "Название": 6,
-        "Описание": 10,
-        "Цель": 7,
+        "Name": 9,
+        "Description": 10,
+        "Goal": 7,
     }
 
     for num, result in enumerate(data):
@@ -38,18 +38,18 @@ def create_table(data: List[dict]):
 def track_stats(data: List[dict]):
     table = pt.PrettyTable(
         [
-            "num",
-            "Название",
-            "Результат",
+            "№",
+            "Name",
+            "Result",
         ]
     )
-    table.align["num"] = "R"
-    table.align["Name"] = "r"
-    table.align["Result"] = "r"
+    table.align["num"] = "r"
+    table.align["Name"] = "m"
+    table.align["Result"] = "m"
 
     table._max_width = {
-        "Название": 10,
-        "Результат": 3,
+        "Name": 10,
+        "Result": 3,
     }
 
     for num, result in enumerate(data):

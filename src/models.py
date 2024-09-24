@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Boolean
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Boolean, BigInteger
 from sqlalchemy.orm import DeclarativeBase, relationship
 from sqlalchemy.types import LargeBinary
 from database.database import engine  # type: ignore
@@ -13,7 +13,7 @@ class Users(Model):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(40), nullable=True)
-    telegram_id = Column(Integer, nullable=False)
+    telegram_id = Column(BigInteger, nullable=False)
     is_active = Column(Boolean, default=True)
 
     token = Column(LargeBinary, nullable=False)

@@ -25,7 +25,7 @@ def upgrade() -> None:
         "users",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("name", sa.String(length=40), nullable=True),
-        sa.Column("telegram_id", sa.Integer(), nullable=False),
+        sa.Column("telegram_id", sa.BigInteger(), nullable=False),
         sa.Column("is_active", sa.Boolean(), nullable=True),
         sa.Column("token", sa.LargeBinary(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
