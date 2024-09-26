@@ -4,20 +4,20 @@ from telebot.types import CallbackQuery, Message
 from apscheduler.schedulers.background import BackgroundScheduler
 from dateutil.relativedelta import relativedelta
 
-from frontend_dev.loader import bot
-from frontend_dev.keyboards.keyboards_answr import (
+from loader import bot
+from keyboards.keyboards_answr import (
     set_habit,
 )
 from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
 
-from frontend_dev.keyboards.keyboards_answr import pick_time
-from frontend_dev.states.states_bot import States
-from frontend_dev.requests_methods.request_methods import (
+from keyboards.keyboards_answr import pick_time
+from states.states_bot import States
+from requests_methods.request_methods import (
     check_user_db,
     set_reminder_request,
     habit_track_request,
 )
-from frontend_dev.middleware.middleware import send_message_middleware
+from middleware.middleware import send_message_middleware
 
 
 @bot.message_handler(
@@ -80,8 +80,8 @@ def processset_reminder(call: CallbackQuery):
     calendar_first, step = DetailedTelegramCalendar(
         calendar_id=1,
         locale="ru",
-        min_date=datetime.date.today(),
-        max_date=datetime.date.today() + relativedelta(months=2),
+        min_date=datetime.date.today() + timedelta(days=1),
+        max_date=datetime.date.today() + relativedelta(months=6),
     ).build()
 
     bot.send_message(

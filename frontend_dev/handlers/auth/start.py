@@ -1,8 +1,8 @@
 from telebot.types import Message
 
-from frontend_dev.loader import bot
-from frontend_dev.states.states_bot import States
-from frontend_dev.requests_methods.request_methods import check_user_db, register_check_request
+from loader import bot
+from states.states_bot import States
+from requests_methods.request_methods import check_user_db, register_check_request
 
 
 @bot.message_handler(commands=["start"])

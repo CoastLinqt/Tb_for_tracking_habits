@@ -1,5 +1,5 @@
 from telebot.types import Message
-from frontend_dev.loader import bot
+from loader import bot
 
 
 @bot.message_handler(commands=["help"])

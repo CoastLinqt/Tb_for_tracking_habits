@@ -9,7 +9,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import DeclarativeBase, relationship
 from sqlalchemy.types import LargeBinary
-from database.database import engine  # type: ignore
+from database.database import engine
 
 
 class Model(DeclarativeBase):
