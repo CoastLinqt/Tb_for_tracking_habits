@@ -1,0 +1,53 @@
+version: '3.2'
+services:
+
+  db:
+    image: postgres
+    env_file:
+      - ./db.env
+
+    ports:
+      - '5432:5432'
+    volumes:
+      - .db/:/var/lib/postgresql/data
+    networks:
+      - network
+
+  app:
+    build:
+      context: .
+
+    env_file:
+      - ./.env
+    command: ["/docker/app.sh"]
+
+    ports:
+      - '8000:8000'
+
+    depends_on:
+      - db
+
+    restart: always
+
+    networks:
+      - network
+
+  telegram_bot:
+    build:
+      context: .
+
+    env_file:
+      - ./.env
+    command: python /frontend_dev/main.py
+
+    depends_on:
+      - app
+
+    restart: always
+
+    networks:
+      - network
+
+networks:
+    network:
+        driver: bridge

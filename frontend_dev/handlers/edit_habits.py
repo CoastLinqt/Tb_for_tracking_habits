@@ -1,14 +1,14 @@
 from telebot.types import Message, CallbackQuery
 
-from frontend_dev.loader import bot
-from frontend_dev.requests_methods.request_methods import (
+from loader import bot
+from requests_methods.request_methods import (
     check_user_db,
     edit_habit_request,
     delete_habit_request,
     habits_all,
 )
-from frontend_dev.states.states_bot import States
-from frontend_dev.keyboards.keyboards_answr import (
+from states.states_bot import States
+from keyboards.keyboards_answr import (
     pick_edit,
     delete_or_edit_habit,
     choice_edit_habit,
@@ -137,7 +137,7 @@ def next_pick_goal_habit(message):
     if length < 20:
         edit_habit_request(data=data)
 
-        bot.send_message(message.from_user.id, f"Успешно!")
+        bot.send_message(message.from_user.id, f"Completed!")
 
         data.clear()
 
@@ -233,7 +233,7 @@ def next_pick_description_all(message: Message):
 
         edit_habit_request(data=data)
 
-        bot.send_message(message.from_user.id, f"Успешно!")
+        bot.send_message(message.from_user.id, f"Completed!")
         data.clear()
     else:
         bot.reply_to(

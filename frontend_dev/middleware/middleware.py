@@ -1,4 +1,4 @@
-from frontend_dev.loader import bot
+from loader import bot
 
 
 def send_message_middleware(my_bot: bot, chat_id: int, name_habit: str):

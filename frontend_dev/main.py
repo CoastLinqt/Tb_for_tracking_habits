@@ -1,4 +1,4 @@
-from frontend_dev.loader import bot
+from loader import bot
 import handlers  # noqa
 from utils.set_bot_commands import set_default_commands
 from telebot.custom_filters import StateFilter

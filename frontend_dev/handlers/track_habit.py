@@ -1,13 +1,13 @@
 from telebot.types import CallbackQuery
 
-from frontend_dev.loader import bot
-from frontend_dev.requests_methods.request_methods import (
+from loader import bot
+from requests_methods.request_methods import (
     check_user_db,
     habit_track_request,
     count_track_request,
 )
 
-from frontend_dev.keyboards.keyboards_answr import (
+from keyboards.keyboards_answr import (
     pick_track,
 )
 

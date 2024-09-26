@@ -1,7 +1,7 @@
 import json
 import requests
 
-from frontend_dev.config_info.config import BACK_URL
+from config_info.config import BACK_URL
 
 
 def check_user_db(telegram_id):

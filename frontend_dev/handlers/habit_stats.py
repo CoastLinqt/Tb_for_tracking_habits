@@ -2,10 +2,10 @@ import json
 
 import requests
 from telebot.types import Message
-from frontend_dev.loader import bot
-from frontend_dev.config_info.config import BACK_URL
-from frontend_dev.helping_func.help_func import track_stats
-from frontend_dev.requests_methods.request_methods import check_user_db
+from loader import bot
+from config_info.config import BACK_URL
+from helping_func.help_func import track_stats
+from requests_methods.request_methods import check_user_db
 
 
 @bot.message_handler(
